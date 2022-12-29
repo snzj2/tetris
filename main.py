@@ -5,7 +5,6 @@ import pygame
 from settings import *
 
 
-
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -28,61 +27,82 @@ def terminate():
     sys.exit()
 
 
-def start_screen():
+def start_screen(image_fon, text):
+    global FPS
     intro_text = ["Правила игры", "",
                   "",
                   "",
                   ""]
-
-    settings_text = ["Кнопки в главном меню:", "",
-                     "/\ увеличить начальную скорость",
-                     "|| падения кубиков",
-                     "||",
-                     "",
-                     "",
-                     "|| уменьшить начальную скорость",
-                     "|| падения кубиков",
-                     "\/",
-                     "",
-                     "Enter чтобы продолжить",
-                     "",
-                     f"скорость сейчас: {FPS}"]
-
-    controlers_text = ["Кнопки в игре:", "",
-                       "/\ Использовать бонус",
-                       "|| (Нарисован в верхнем левом углу",
-                       "||",
-                       "",
-                       "",
-                       "|| Увеличить скорость фигрурки до предела",
-                       "|| ",
-                       "\/",
-                       "",
-                       "-> подвинуть фигурку на 1 клуточку вправо",
-                       "",
-                       "<- подвинуть фигурку на 1 клуточку влево"]
-
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in settings_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+    fon = pygame.transform.scale(load_image(image_fon), (WIDTH, HEIGHT))
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN and (event.key == 13 or event.key == pygame.K_KP_ENTER):
-                return  # начинаем игру
+                return FPS
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    if FPS != 1 and text == "settings_text":
+                        FPS -= 1
+
+                if event.key == pygame.K_UP:
+                    if text == "settings_text":
+                        FPS += 1
+
+        screen.blit(fon, (0, 0))
+
+        font = pygame.font.Font(None, 30)
+        if text == "controlers_text":
+            text_coord = 20
+            text_lines = ["Кнопки в игре:", "",
+                          "/\ Использовать бонус",
+                          "|| (Нарисован в верхнем ",
+                          "|| левом углу)",
+                          "",
+                          "",
+                          "|| Увеличить скорость ",
+                          "|| фигрурки до предела",
+                          "\/",
+                          "",
+                          "-> подвинуть фигурку",
+                          "   на 1 клуточку вправо",
+                          "",
+                          "<- подвинуть фигурку",
+                          "   на 1 клуточку влево",
+                          "",
+                          "K - повернуть фигурку",
+                          "   по чесовой",
+                          "",
+                          "L - повернуть фигурку",
+                          "  против часовой",
+                          "",
+                          "Enter чтобы начать"]
+        if text == "settings_text":
+            text_coord = 50
+            text_lines = ["Кнопки в главном меню:", "",
+                          "/\ увеличить начальную скорость",
+                          "|| падения кубиков",
+                          "||",
+                          "",
+                          "",
+                          "|| уменьшить начальную скорость",
+                          "|| падения кубиков",
+                          "\/",
+                          "",
+                          "Enter чтобы продолжить",
+                          "",
+                          f"скорость сейчас: {FPS}"]
+
+        for line in text_lines:
+            string_rendered = font.render(line, 1, pygame.Color('white'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = 10
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
-        clock.tick(FPS)
 
 
 if __name__ == '__main__':
@@ -91,8 +111,10 @@ if __name__ == '__main__':
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
-    FPS = 5
-    start_screen()
+
+    start_screen("fon.jpg", "settings_text")
+    start_screen("fon_2.jpg", "controlers_text")
+
     running = True
     while running:
         for event in pygame.event.get():

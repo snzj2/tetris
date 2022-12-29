@@ -1,1 +1,2 @@
 WIDTH, HEIGHT = 350, 800
+FPS = 5
