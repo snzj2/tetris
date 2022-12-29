@@ -5,6 +5,7 @@ import pygame
 from settings import *
 
 
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -43,6 +44,8 @@ def start_screen():
                      "|| падения кубиков",
                      "\/",
                      "",
+                     "Enter чтобы продолжить",
+                     "",
                      f"скорость сейчас: {FPS}"]
 
     controlers_text = ["Кнопки в игре:", "",
@@ -63,7 +66,7 @@ def start_screen():
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 50
-    for line in intro_text:
+    for line in settings_text:
         string_rendered = font.render(line, 1, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
@@ -76,8 +79,7 @@ def start_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.KEYDOWN and (event.key == 13 or event.key == pygame.K_KP_ENTER):
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
@@ -88,9 +90,10 @@ if __name__ == '__main__':
     pygame.display.set_caption('Тетрис')
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
-    running = True
-    FPS = 5
     clock = pygame.time.Clock()
+    FPS = 5
+    start_screen()
+    running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
