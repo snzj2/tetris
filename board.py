@@ -67,13 +67,13 @@ class Board:
 
     def next_move(self):
         #if not bool(self.figuri):
-        self.figuri.append(Figures(4, 0))
-        for i in self.figuri:
-            pass
-
+        self.figuri.append(Figures(7, 0))
+        # for i in self.figuri:
+        #     pass
 
 all_sprites = pygame.sprite.Group()
-border_group = pygame.sprite.Group()
+vertical_borders = pygame.sprite.Group()
+horizontal_borders = pygame.sprite.Group()
 figure_group = pygame.sprite.Group()
 
 tile_width = tile_height = 35
@@ -85,26 +85,56 @@ class Figures(pygame.sprite.Sprite):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.image = load_image(f"{choice(figure)}.png")
-
         self.rect = self.image.get_rect().move(
-            tile_width * self.pos_x - 5, tile_height * self.pos_y)
+            self.pos_x * tile_width - 5, tile_height * self.pos_y)
 
     def update(self):
         self.rect = self.image.get_rect().move(
             tile_width * self.pos_x - 5, tile_height * self.pos_y)
+        fl = 0
+        for i in figure_group:
+            if pygame.sprite.collide_mask(self, i):
+                fl += 1
+        fl -= 1
+        if fl or pygame.sprite.collide_mask(self, down_border):
+            self.pos_y -= 1
+            self.rect = self.image.get_rect().move(
+                tile_width * self.pos_x - 5, tile_height * self.pos_y)
+            return "Next"
+        return None
 
     def down(self):
         self.pos_y += 1
 
     def move(self, event):
         if event.key == pygame.K_LEFT:
-            self.pos_x -= 1
+            if not pygame.sprite.collide_mask(self, left_border):
+                self.pos_x -= 1
         if event.key == pygame.K_RIGHT:
-            self.pos_x += 1
+            if not pygame.sprite.collide_mask(self, right_border):
+                self.pos_x += 1
         if event.key == 107:
             self.image = pygame.transform.rotate(self.image, 90)
             self.image = pygame.transform.flip(self.image, False, True)
         if event.key == 108:
             self.image = pygame.transform.rotate(self.image, -90)
             self.image = pygame.transform.flip(self.image, False, True)
+        if event.key == pygame.K_DOWN:
+            self.pos_y = 21
 
+class Border(pygame.sprite.Sprite):
+    # строго вертикальный или строго горизонтальный отрезок
+    def __init__(self, x1, y1, x2, y2):
+        super().__init__(all_sprites)
+        if x1 == x2:  # вертикальная стенка
+            self.add(vertical_borders)
+            self.image = pygame.Surface([1, y2 - y1])
+            self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+        else:  # горизонтальная стенка
+            self.add(horizontal_borders)
+            self.image = pygame.Surface([x2 - x1, 1])
+            self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
+
+down_border = Border(100, HEIGHT, WIDTH - 100, HEIGHT)
+left_border = Border(100, 0, 100, HEIGHT)
+right_border = Border(WIDTH - 135, 0, WIDTH - 135, HEIGHT)

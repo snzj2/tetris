@@ -35,22 +35,22 @@ def start_screen(image_fon, text):
                   "",
                   ""]
     fon = pygame.transform.scale(load_image(image_fon), (WIDTH, HEIGHT))
-    speed = 60
+    main_speed = 60
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN and (event.key == 13 or event.key == pygame.K_KP_ENTER):
-                return speed
+                return main_speed
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
-                    if speed != 1 and text == "settings_text":
-                        speed -= 5
+                    if main_speed != 1 and text == "settings_text":
+                        main_speed -= 5
 
                 if event.key == pygame.K_UP:
                     if text == "settings_text":
-                        speed += 5
+                        main_speed += 5
 
         screen.blit(fon, (0, 0))
 
@@ -94,7 +94,7 @@ def start_screen(image_fon, text):
                           "",
                           "Enter чтобы продолжить",
                           "",
-                          f"скорость сейчас: {speed}"]
+                          f"скорость сейчас: {main_speed}"]
 
         for line in text_lines:
             string_rendered = font.render(line, 1, pygame.Color('white'))
@@ -106,6 +106,9 @@ def start_screen(image_fon, text):
             screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
 
+Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
+Border(5, 5, 5, HEIGHT - 5)
+Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 
 if __name__ == '__main__':
     pygame.init()
@@ -114,7 +117,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
 
-    speed = start_screen("fon.jpg", "settings_text")
+    main_speed = start_screen("fon.jpg", "settings_text")
     start_screen("fon_2.jpg", "controlers_text")
     screen.fill((0, 0, 0))
     board = Board(23, 10)
@@ -122,29 +125,38 @@ if __name__ == '__main__':
     running = True
     n = 0
     k = 0
+    board.next_move()
+    speed = 1
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                speed += 1
+            elif event.type == pygame.KEYDOWN:
                 fig = board.figuri[-1]
                 fig.move(event)
 
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
-        all_sprites.update()
+        fig = board.figuri[-1]
+        if fig.update() is not None:
+            board.next_move()
+            speed = 1
+            board.render(screen)
+            continue
 
-        n += 1
-        if n % speed == 0:
+        n += speed
+        if main_speed - n <= 0:
             n = 0
             k += 1
             fig = board.figuri[-1]
             fig.down()
 
         board.render(screen)
-        if k % 8 == 0:
-            k = 1
-            board.next_move()
+        # if k % 8 == 0:
+        #     k = 1
+        #     board.next_move()
 
         clock.tick(FPS)
         pygame.display.flip()
