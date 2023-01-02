@@ -106,6 +106,9 @@ def start_screen(image_fon, text):
             screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
 
+Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
+Border(5, 5, 5, HEIGHT - 5)
+Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
 
 Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
 Border(5, 5, 5, HEIGHT - 5)
