@@ -40,10 +40,11 @@ class Board:
 
     def next_picture(self):
         self.image = load_image(f"{self.next_figura}.png")
-        self.rect = self.image.get_rect(center=(510, 120))
         self.scale = pygame.transform.scale(
             self.image, (self.image.get_width() // 1.75,
                          self.image.get_height() // 1.75))
+        self.rect = self.image.get_rect(center=(540 - (self.scale.get_height() // 2),
+                                                155 - (self.scale.get_width() // 2)))
 
     def block(self):
         # что-бы не нагружать
@@ -97,11 +98,9 @@ class Board:
             if tr and len(set(j)) <= 2:
                 delete.append(i)
         for i in delete:
-            pprint.pprint(self.board)
             for k in range(10):
                 del self.board[k][i]
                 self.board[k].insert(0, 0)
-            pprint.pprint(self.board)
 
     def next_move(self):
         global figure_group
@@ -117,7 +116,6 @@ class Board:
         self.figuri = []
 
         self.figuri.append(Figures(7, 0, self.next_figura))
-
         self.next_figura = choice(figure)
         self.next_picture()
 
@@ -174,7 +172,6 @@ class Figures(pygame.sprite.Sprite):
 
     def examination(self):
         fl = 0
-
         for i in figure_group:
             if pygame.sprite.collide_mask(self, i):
                 fl += 1
@@ -206,11 +203,19 @@ class Figures(pygame.sprite.Sprite):
         if event.key == 107:
             self.image = pygame.transform.rotate(self.image, 90)
             fl = self.examination()
+            k = self.rect.height - 35
+            if pygame.sprite.collide_mask(self, right_border):
+                if pygame.sprite.collide_mask(self, right_border)[0] != k:
+                    fl += 1
             if fl:
                 self.image = pygame.transform.rotate(self.image, -90)
         if event.key == 108:
             self.image = pygame.transform.rotate(self.image, -90)
             fl = self.examination()
+            k = self.rect.height - 35
+            if pygame.sprite.collide_mask(self, right_border):
+                if pygame.sprite.collide_mask(self, right_border)[0] != k:
+                    fl += 1
             if fl:
                 self.image = pygame.transform.rotate(self.image, 90)
         if event.key == pygame.K_DOWN:
