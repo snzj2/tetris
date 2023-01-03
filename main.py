@@ -28,6 +28,17 @@ def terminate():
     sys.exit()
 
 
+def fonts(point):
+    font_size = 40
+    font = pygame.font.Font(None, font_size)
+    font_color = (255, 255, 255)
+    text = font.render("Счёт", 1, font_color)
+
+    screen.blit(text, (500, 300))
+
+    text1 = font.render(str(point), 1, font_color)
+    screen.blit(text1, (510, 350))
+
 def start_screen(image_fon, text):
     global FPS
     intro_text = ["Правила игры", "",
@@ -47,7 +58,6 @@ def start_screen(image_fon, text):
                 if event.key == pygame.K_DOWN:
                     if main_speed != 1 and text == "settings_text":
                         main_speed -= 5
-
                 if event.key == pygame.K_UP:
                     if text == "settings_text":
                         main_speed += 5
@@ -68,10 +78,10 @@ def start_screen(image_fon, text):
                           "\/",
                           "",
                           "-> подвинуть фигурку",
-                          "   на 1 клуточку вправо",
+                          "   на 1 клеточку вправо",
                           "",
                           "<- подвинуть фигурку",
-                          "   на 1 клуточку влево",
+                          "   на 1 клеточку влево",
                           "",
                           "K - повернуть фигурку",
                           "   по чесовой",
@@ -131,18 +141,27 @@ if __name__ == '__main__':
     k = 0
     board.next_move()
     speed = 1
+    text_coord = 50
+    font = pygame.font.Font(None, 30)
+    text_lines = ["Счёт", "",]
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                speed += 1
             elif event.type == pygame.KEYDOWN:
                 fig = board.figuri[-1]
                 fig.move(event)
         screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
-
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_DOWN]:
+            speed = main_speed // 4
+        else:
+            speed = 1
+        text_coord = 50
+        # Выводим очки
+        fonts(board.points)
         all_sprites.draw(screen)
         fig = board.figuri[-1]
         if fig.update() is not None:
@@ -152,10 +171,14 @@ if __name__ == '__main__':
             continue
 
         n += speed
+
         if main_speed - n <= 0:
             n = 0
+
             k += 1
             fig.down()
+
+
 
         board.render(screen)
         # if k % 8 == 0:

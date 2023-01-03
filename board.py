@@ -28,7 +28,7 @@ class Board:
         self.t = Table(1, self.left, self.top)
         self.next_figura = choice(figure)
         self.next_picture()
-
+        self.points = 0
         self.figuri = []
 
     def render(self, screen):
@@ -43,7 +43,7 @@ class Board:
         self.scale = pygame.transform.scale(
             self.image, (self.image.get_width() // 1.75,
                          self.image.get_height() // 1.75))
-        self.rect = self.image.get_rect(center=(540 - (self.scale.get_height() // 2),
+        self.rect = self.image.get_rect(center=(635 - (self.scale.get_height() // 2),
                                                 155 - (self.scale.get_width() // 2)))
 
     def block(self):
@@ -97,6 +97,14 @@ class Board:
                     tr = False
             if tr and len(set(j)) <= 2:
                 delete.append(i)
+        if len(delete) == 1:
+            self.points += 100
+        if len(delete) == 2:
+            self.points += 300
+        if len(delete) == 3:
+            self.points += 700
+        if len(delete) == 4:
+            self.points += 1500
         for i in delete:
             for k in range(10):
                 del self.board[k][i]
@@ -218,8 +226,7 @@ class Figures(pygame.sprite.Sprite):
                     fl += 1
             if fl:
                 self.image = pygame.transform.rotate(self.image, 90)
-        if event.key == pygame.K_DOWN:
-            self.pos_y = 21
+
 
         self.rect = self.image.get_rect().move(
             self.pos_x * tile_width - 5, tile_height * self.pos_y)
@@ -268,4 +275,4 @@ class Table(pygame.sprite.Sprite):
 
 down_border = Border(100, HEIGHT, WIDTH - 100, HEIGHT)
 left_border = Border(100, 0, 100, HEIGHT)
-right_border = Border(WIDTH - 135, 0, WIDTH - 135, HEIGHT)
+right_border = Border(WIDTH - 235, 0, WIDTH - 235, HEIGHT)
