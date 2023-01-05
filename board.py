@@ -7,6 +7,12 @@ from settings import *
 import pprint
 
 
+def delete_no(r, x1, y1, x2, y2):
+    if (r <= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
+        return True
+    return False
+
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
@@ -57,6 +63,18 @@ class Board:
                 elif w == 3:
                     Block(i + 3, k, "blue")
 
+    def bomb(self, r, x1, y1):
+        sp = []
+        for i in range(len(self.board)):
+            ss = []
+            for j in range(len(self.board[i])):
+                if delete_no(r, x1, y1, j, i):
+                    ss.append(True)
+                else:
+                    ss.append(False)
+            sp.append(ss)
+        return sp
+
     def on_click(self, cell):
         if cell != None:
             self.board[cell[0]][cell[1]] += 1
@@ -64,7 +82,6 @@ class Board:
                 self.board[cell[0]][cell[1]] = 0
 
     def get_cell(self, mouse_pos):
-        cell = ()
         for i, h in enumerate(self.board):
             for k, w in enumerate(h):
                 n1 = self.left + i * self.cell_size
@@ -149,7 +166,8 @@ class Block(pygame.sprite.Sprite):
             self.image = load_image("red.png")
         elif color == "green":
             self.image = load_image("green.png")
-
+        elif color == "small_bomb":
+            self.image = load_image("small_bomb.jpg")
         self.rect = self.image.get_rect().move(
             self.pos_x * tile_width - 5, tile_height * self.pos_y)
 
