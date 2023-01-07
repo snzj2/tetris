@@ -33,7 +33,7 @@ class Board:
         self.left = 100
         self.top = 0
         # переменная для огня
-        self.fire = 0
+        self.fire = 1
         self.havefire = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         self.cell_size = 35
