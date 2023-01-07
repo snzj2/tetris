@@ -2,9 +2,17 @@ import os
 import sys
 
 import pygame
-from random import choice
+
+from random import choice, randint
+from pprint import pprint
 from settings import *
 import pprint
+
+
+def delete_no(r, x1, y1, x2, y2):
+    if (r <= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
+        return True
+    return False
 
 
 def load_image(name, colorkey=None):
@@ -24,6 +32,10 @@ class Board:
         self.board_2 = [[0] * width for _ in range(height)]
         self.left = 100
         self.top = 0
+        # переменная для огня
+        self.fire = 0
+        self.havefire = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
         self.cell_size = 35
         self.t = Table(1, self.left, self.top)
         self.next_figura = choice(figure)
@@ -57,6 +69,18 @@ class Board:
                 elif w == 3:
                     Block(i + 3, k, "blue")
 
+    def bomb(self, r, x1, y1):
+        sp = []
+        for i in range(len(self.board)):
+            ss = []
+            for j in range(len(self.board[i])):
+                if delete_no(r, x1, y1, j, i):
+                    ss.append(True)
+                else:
+                    ss.append(False)
+            sp.append(ss)
+        return sp
+
     def on_click(self, cell):
         if cell != None:
             self.board[cell[0]][cell[1]] += 1
@@ -64,7 +88,6 @@ class Board:
                 self.board[cell[0]][cell[1]] = 0
 
     def get_cell(self, mouse_pos):
-        cell = ()
         for i, h in enumerate(self.board):
             for k, w in enumerate(h):
                 n1 = self.left + i * self.cell_size
@@ -85,6 +108,48 @@ class Board:
         self.top = top
         self.cell_size = cell_size
 
+    def fires(self):
+        self.tables()
+        self.figuri = []
+        for i in range(23):
+            for k in range(10):
+                if self.board[k][i] != 0:
+                    self.havefire[k] += 1
+        for i in range(len(self.havefire)):
+            n = 0
+            for k in range(self.havefire[i]):
+                r = randint(1, 100)
+                if r <= chance[k]:
+                    n += 1
+            self.havefire[i] = n
+        for k in range(10):
+            Fire(k + 3, 0, self.havefire[k])
+
+    def move_fire(self):
+        global figure_group
+        a = []
+        for i in fire:
+            k = i.prikosnoveniie()
+            if k is not None and i.life >= 0:
+                del self.board[k[0] - 3][k[1] + 1]
+                self.board[k[0] - 3].insert(0, 0)
+            i.down()
+            a.append(i.life)
+
+        for i in figure_group:
+            i.kill()
+        if max(a) == 0:
+            self.figuri = []
+            self.figuri.append(Figures(7, 0, self.next_figura))
+            self.next_figura = choice(figure)
+            self.next_picture()
+            self.block()
+            return 0
+        figure_group = pygame.sprite.Group()
+        # делаем по блоку из списка
+        self.block()
+        return 2
+
     def examination(self):
         # какую линию нужно удалить
         delete = []
@@ -99,10 +164,12 @@ class Board:
                 delete.append(i)
         if len(delete) == 1:
             self.points += 100
+            self.fire += 1
         if len(delete) == 2:
             self.points += 300
         if len(delete) == 3:
             self.points += 700
+            self.fire += 1
         if len(delete) == 4:
             self.points += 1500
         for i in delete:
@@ -110,7 +177,7 @@ class Board:
                 del self.board[k][i]
                 self.board[k].insert(0, 0)
 
-    def next_move(self):
+    def tables(self):
         global figure_group
         # заполняем двухмерный массив где находятся блоки
         self.board = self.t.markup(self.board_2)
@@ -121,8 +188,10 @@ class Board:
         figure_group = pygame.sprite.Group()
         # делаем по блоку из списка
         self.block()
-        self.figuri = []
 
+    def next_move(self):
+        self.tables()
+        self.figuri = []
         self.figuri.append(Figures(7, 0, self.next_figura))
         self.next_figura = choice(figure)
         self.next_picture()
@@ -132,8 +201,58 @@ all_sprites = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 horizontal_borders = pygame.sprite.Group()
 figure_group = pygame.sprite.Group()
+fire = pygame.sprite.Group()
 
 tile_width = tile_height = 35
+
+
+class Fire(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, life):
+        super().__init__(fire, all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.life = life
+        self.proverka = 0
+        if self.life != 0:
+            self.image = load_image("flame.png")
+        else:
+            self.image = load_image("empty.png")
+        self.rect = self.image.get_rect().move(
+            self.pos_x * tile_width - 5, tile_height * self.pos_y)
+
+    def update(self):
+        self.rect = self.image.get_rect().move(
+            tile_width * self.pos_x - 5, tile_height * self.pos_y)
+
+    def down(self):
+        self.pos_y += 1
+
+    def examination(self):
+        fl = 0
+        for i in figure_group:
+            if pygame.sprite.collide_mask(self, i):
+                fl += 1
+        fl -= 1
+        return fl
+
+    def prikosnoveniie(self):
+        if self.life != 0:
+            self.pos_y += 1
+            self.update()
+            fl = self.examination()
+            if not fl:
+                self.image = load_image("fire.png")
+                self.life -= 1
+                self.pos_y -= 1
+                self.update()
+                return self.pos_x, self.pos_y
+            else:
+                self.image = load_image("flame.png")
+            self.pos_y -= 1
+            self.update()
+        else:
+            self.image = load_image("empty.png")
+        return None
 
 
 class Block(pygame.sprite.Sprite):
@@ -149,7 +268,8 @@ class Block(pygame.sprite.Sprite):
             self.image = load_image("red.png")
         elif color == "green":
             self.image = load_image("green.png")
-
+        elif color == "small_bomb":
+            self.image = load_image("small_bomb.jpg")
         self.rect = self.image.get_rect().move(
             self.pos_x * tile_width - 5, tile_height * self.pos_y)
 
@@ -188,6 +308,8 @@ class Figures(pygame.sprite.Sprite):
 
     def down(self):
         self.pos_y += 1
+        for i in fire:
+            i.kill()
 
     def move(self, event):
         if event.key == pygame.K_LEFT:
@@ -226,8 +348,6 @@ class Figures(pygame.sprite.Sprite):
                     fl += 1
             if fl:
                 self.image = pygame.transform.rotate(self.image, 90)
-
-
         self.rect = self.image.get_rect().move(
             self.pos_x * tile_width - 5, tile_height * self.pos_y)
 
