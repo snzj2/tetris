@@ -39,7 +39,6 @@ def fonts(point):
     text1 = font.render(str(point), 1, font_color)
     screen.blit(text1, (510, 350))
 
-
 def start_screen(image_fon, text):
     global FPS
     intro_text = ["Правила игры", "",
@@ -117,7 +116,6 @@ def start_screen(image_fon, text):
             screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
 
-
 Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
 Border(5, 5, 5, HEIGHT - 5)
 Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
@@ -145,36 +143,18 @@ if __name__ == '__main__':
     speed = 1
     text_coord = 50
     font = pygame.font.Font(None, 30)
-    text_lines = ["Счёт", "", ]
-    flag = 0
-    x_mouse, y_mouse = 3, 0
-    bomb_gr = pygame.sprite.Group()
-    fireflag = 0
+    text_lines = ["Счёт", "",]
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_z:
-                flag = 1
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x:
-                if board.fire > 0:
-                    board.fire -= 1
-                    fireflag = 1
             elif event.type == pygame.KEYDOWN:
-                if board.figuri != []:
-                    fig = board.figuri[-1]
-                    fig.move(event)
-            if event.type == pygame.MOUSEMOTION:
-                pos = board.get_cell(event.pos)
-                if pos is not None:
-                    y_mouse, x_mouse = pos
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                flag = 3
-
+                fig = board.figuri[-1]
+                fig.move(event)
         screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
         keys = pygame.key.get_pressed()
-
         if keys[pygame.K_DOWN]:
             speed = main_speed // 4
         else:
@@ -182,34 +162,23 @@ if __name__ == '__main__':
         text_coord = 50
         # Выводим очки
         fonts(board.points)
-        if board.figuri:
-            fig = board.figuri[-1]
-            if fig.update() is not None and not flag:
-                if fireflag == 0:
-                    board.next_move()
-                    speed = 1
-                elif fireflag == 1:
-                    board.fires()
-                    fireflag = 2
-            elif flag == 1:
-                new_bomb = Block(x_mouse, y_mouse, "small_bomb")
-                flag = 2
-            elif flag == 2:
-                if new_bomb.pos_x != x_mouse:
-                    new_bomb.pos_x = x_mouse
-                if new_bomb.pos_y != y_mouse:
-                    new_bomb.pos_y = y_mouse
-        n += speed
         all_sprites.draw(screen)
+        fig = board.figuri[-1]
+        if fig.update() is not None:
+            board.next_move()
+            speed = 1
+            board.render(screen)
+            continue
+
+        n += speed
 
         if main_speed - n <= 0:
             n = 0
+
             k += 1
-            if fireflag == 2:
-                fireflag = board.move_fire()
-                all_sprites.update()
-            else:
-                fig.down()
+            fig.down()
+
+
 
         board.render(screen)
         # if k % 8 == 0:
