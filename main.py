@@ -147,20 +147,28 @@ if __name__ == '__main__':
     font = pygame.font.Font(None, 30)
     text_lines = ["Счёт", "", ]
     flag = 0
-    x_mouse, y_mouse = 3, 0
+    x_mouse, y_mouse = 0, 0
     bomb_gr = pygame.sprite.Group()
     fireflag = 0
+    new_bomb = None
+    big_flag = 0
+    keyy = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_z:
                 flag = 1
+                new_bomb = Bomb(x_mouse, y_mouse, "small")
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                big_flag = 1
+                new_bomb = Bomb(x_mouse, y_mouse, "big")
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_x:
-                if board.fire > 0:
+                if board.fire > 0 and fireflag == 0:
                     board.fire -= 1
                     fireflag = 1
             elif event.type == pygame.KEYDOWN:
+                keyy = event
                 if board.figuri != []:
                     fig = board.figuri[-1]
                     fig.move(event)
@@ -169,7 +177,8 @@ if __name__ == '__main__':
                 if pos is not None:
                     y_mouse, x_mouse = pos
             if event.type == pygame.MOUSEBUTTONDOWN:
-                flag = 3
+                if flag:
+                    flag = 3
 
         screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
@@ -184,30 +193,30 @@ if __name__ == '__main__':
         fonts(board.points)
         if board.figuri:
             fig = board.figuri[-1]
-            if fig.update() is not None and not flag:
-                if fireflag == 0:
+            if flag < 2 and big_flag < 2 and fig.update() is not None:
+                if fireflag == 0 and flag == 0 and big_flag == 0:
                     board.next_move()
                     speed = 1
                 elif fireflag == 1:
                     board.fires()
                     fireflag = 2
-            elif flag == 1:
-                new_bomb = Block(x_mouse, y_mouse, "small_bomb")
-                flag = 2
-            elif flag == 2:
-                if new_bomb.pos_x != x_mouse:
-                    new_bomb.pos_x = x_mouse
-                if new_bomb.pos_y != y_mouse:
-                    new_bomb.pos_y = y_mouse
+                elif flag == 1:
+                    flag = 2
+                elif big_flag == 1:
+                    big_flag = 2
+            if flag > 1:
+                flag, new_bomb, n = board.boom(new_bomb, flag, x_mouse, y_mouse, n, main_speed, keyy)
+            elif big_flag > 1:
+                big_flag, new_bomb, n = board.boom(new_bomb, big_flag, x_mouse, y_mouse, n, main_speed, keyy)
         n += speed
         all_sprites.draw(screen)
 
-        if main_speed - n <= 0:
+        if big_flag < 2 and flag < 2 and main_speed - n <= 0:
             n = 0
             k += 1
             if fireflag == 2:
                 fireflag = board.move_fire()
-                all_sprites.update()
+                fire.update()
             else:
                 fig.down()
 
@@ -215,6 +224,7 @@ if __name__ == '__main__':
         # if k % 8 == 0:
         #     k = 1
         #     board.next_move()
+        keyy = None
 
         clock.tick(FPS)
         pygame.display.flip()

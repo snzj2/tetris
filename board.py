@@ -4,13 +4,10 @@ import sys
 import pygame
 
 from random import choice, randint
-from pprint import pprint
 from settings import *
-import pprint
-
 
 def delete_no(r, x1, y1, x2, y2):
-    if (r <= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
+    if (r >= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
         return True
     return False
 
@@ -33,8 +30,7 @@ class Board:
         self.left = 100
         self.top = 0
         # переменная для огня
-        self.fire = 1
-        self.havefire = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.fire = 10
 
         self.cell_size = 35
         self.t = Table(1, self.left, self.top)
@@ -69,7 +65,7 @@ class Board:
                 elif w == 3:
                     Block(i + 3, k, "blue")
 
-    def bomb(self, r, x1, y1):
+    def vzriv(self, r, x1, y1):
         sp = []
         for i in range(len(self.board)):
             ss = []
@@ -109,6 +105,7 @@ class Board:
         self.cell_size = cell_size
 
     def fires(self):
+        self.havefire = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.tables()
         self.figuri = []
         for i in range(23):
@@ -149,6 +146,50 @@ class Board:
         # делаем по блоку из списка
         self.block()
         return 2
+
+    def boom(self, bomb, flag, x_m, y_m, n, main_speed, event):
+        global figure_group
+        if flag == 1:
+            return 0, None, n
+        if bomb is None:
+            self.tables()
+            self.figuri = []
+            for i in figure_group:
+                i.kill()
+            self.figuri = []
+            # self.figuri.append(Figures(7, 0, self.next_figura))
+            self.next_figura = choice(figure)
+            self.next_picture()
+            figure_group = pygame.sprite.Group()
+            # делаем по блоку из списка
+            self.block()
+            return 0, None, n
+        if flag == 2 and bomb.fl == 0:
+            fl = bomb.update(x_m, y_m, n, main_speed, event)
+            if fl is not None:
+                return 2, bomb, 0
+            return 2, bomb, n
+        if flag == 3 or bomb.fl == 3:
+            self.tables()
+            self.figuri = []
+            tab = self.vzriv(bomb.r, bomb.rect.y // tile_height, bomb.rect.x // tile_width-1)
+            for i in range(len(tab)):
+                for j in range(len(tab[i])):
+                    if tab[i][j]:
+                        self.board[i][j] = 0
+            bomb.image = load_image("empty.png")
+            for i in figure_group:
+                i.kill()
+            self.figuri = []
+            #Можешь исправить этот баг?
+            self.figuri.append(Figures(7, 0, self.next_figura))
+            #строка сверху|
+            self.next_figura = choice(figure)
+            self.next_picture()
+            figure_group = pygame.sprite.Group()
+            # делаем по блоку из списка
+            self.block()
+        return 0, None, n
 
     def examination(self):
         # какую линию нужно удалить
@@ -391,6 +432,56 @@ class Table(pygame.sprite.Sprite):
                             board[i][k] = 3
 
         return board
+
+
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, type):
+        super().__init__(all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.fl = 0
+        self.r = 3
+        self.image = load_image("small_bomb.png")
+        if type != "small":
+            self.r = 5
+            # self.image = load_image("big_bomb.png")
+
+        if type == "small":
+            self.deistv = "following"
+        else:
+            self.deistv = "falling"
+        self.rect = self.image.get_rect().move(
+            (pos_x + 3) * tile_width - 5, tile_height * pos_y)
+
+    def examination(self):
+        fl = 0
+        for i in figure_group:
+            if pygame.sprite.collide_mask(self, i):
+                fl += 1
+        return fl
+
+    def update(self, *args):
+        if args[4] is not None:
+            if args[4].key == pygame.K_LEFT:
+                if not pygame.sprite.collide_mask(self, left_border):
+                    self.rect.x -= tile_width
+                    self.pos_x -= 1
+
+            if args[4].key == pygame.K_RIGHT:
+                if not pygame.sprite.collide_mask(self, right_border):
+                    self.rect.x += tile_width
+        if self.deistv == "falling":
+            if args[3] - args[2] <= 0:
+                self.rect.y += tile_height
+                if self.examination():
+                    self.fl = 3
+                return 0
+        else:
+            self.rect.y = args[0] * tile_height
+            self.rect.x = (args[1] + 3) * tile_width - 5
+        return None
+
+
 
 
 down_border = Border(100, HEIGHT, WIDTH - 100, HEIGHT)
