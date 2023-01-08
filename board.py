@@ -172,7 +172,7 @@ class Board:
         if flag == 3 or bomb.fl == 3:
             self.tables()
             self.figuri = []
-            tab = self.vzriv(bomb.r, bomb.rect.y // tile_height, bomb.rect.x // tile_width-1)
+            tab = self.vzriv(bomb.r, bomb.rect.y // tile_height-1, bomb.rect.x // tile_width-1)
             for i in range(len(tab)):
                 for j in range(len(tab[i])):
                     if tab[i][j]:
@@ -444,7 +444,7 @@ class Bomb(pygame.sprite.Sprite):
         self.image = load_image("small_bomb.png")
         if type != "small":
             self.r = 5
-            # self.image = load_image("big_bomb.png")
+            self.image = load_image("big_bomb.png")
 
         if type == "small":
             self.deistv = "following"
@@ -463,17 +463,16 @@ class Bomb(pygame.sprite.Sprite):
     def update(self, *args):
         if args[4] is not None:
             if args[4].key == pygame.K_LEFT:
-                if not pygame.sprite.collide_mask(self, left_border):
+                if not pygame.sprite.collide_rect(self, left_border):
                     self.rect.x -= tile_width
-                    self.pos_x -= 1
 
             if args[4].key == pygame.K_RIGHT:
-                if not pygame.sprite.collide_mask(self, right_border):
+                if not pygame.sprite.collide_rect(self, right_border):
                     self.rect.x += tile_width
         if self.deistv == "falling":
             if args[3] - args[2] <= 0:
                 self.rect.y += tile_height
-                if self.examination():
+                if self.examination() or pygame.sprite.collide_rect(self, down_border):
                     self.fl = 3
                 return 0
         else:

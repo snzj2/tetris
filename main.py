@@ -157,19 +157,19 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_z:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_z and not fireflag and not big_flag and not flag:
                 flag = 1
                 new_bomb = Bomb(x_mouse, y_mouse, "small")
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c and not fireflag and not flag and not big_flag:
                 big_flag = 1
                 new_bomb = Bomb(x_mouse, y_mouse, "big")
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x and not flag and not big_flag and not fireflag:
                 if board.fire > 0 and fireflag == 0:
                     board.fire -= 1
                     fireflag = 1
             elif event.type == pygame.KEYDOWN:
                 keyy = event
-                if board.figuri != []:
+                if board.figuri != [] and flag < 2 and big_flag < 2:
                     fig = board.figuri[-1]
                     fig.move(event)
             if event.type == pygame.MOUSEMOTION:
@@ -207,7 +207,7 @@ if __name__ == '__main__':
             if flag > 1:
                 flag, new_bomb, n = board.boom(new_bomb, flag, x_mouse, y_mouse, n, main_speed, keyy)
             elif big_flag > 1:
-                big_flag, new_bomb, n = board.boom(new_bomb, big_flag, x_mouse, y_mouse, n, main_speed, keyy)
+                big_flag, new_bomb, n = board.boom(new_bomb, big_flag, 7, 0, n, main_speed, keyy)
         n += speed
         all_sprites.draw(screen)
 
