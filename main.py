@@ -27,6 +27,44 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+def bafs(x, z, c):
+    font_size = 42
+    font = pygame.font.Font(None, font_size)
+    font_color = (0, 0, 0)
+
+    K_z = pygame.image.load('data/K_z.png')
+    K_z_rect = K_z.get_rect(center=(50, 100))
+    screen.blit(K_z, K_z_rect)
+
+    K_x = pygame.image.load('data/K_x.png')
+    K_x_rect = K_x.get_rect(center=(50, 200))
+    screen.blit(K_x, K_x_rect)
+
+    K_c = pygame.image.load('data/K_c.png')
+    K_c_rect = K_c.get_rect(center=(50, 300))
+    screen.blit(K_c, K_c_rect)
+
+    fire = pygame.image.load('data/small_bomb.png')
+    fire_rect = fire.get_rect(center=(50, 75))
+    screen.blit(fire, fire_rect)
+
+    bomb1 = pygame.image.load('data/flame.png')
+    bomb1_rect = fire.get_rect(center=(50, 175))
+    screen.blit(bomb1, bomb1_rect)
+
+    bomb2 = pygame.image.load('data/big_bomb.png')
+    bomb2_rect = fire.get_rect(center=(50, 275))
+    screen.blit(bomb2, bomb2_rect)
+
+    fire_text = font.render(str(z), 1, font_color)
+    screen.blit(fire_text, (25, 105))
+
+    fire_bomb_1 = font.render(str(x), 1, font_color)
+    screen.blit(fire_bomb_1, (25, 205))
+
+    fire_bomb_2 = font.render(str(c), 1, font_color)
+    screen.blit(fire_bomb_2, (25, 305))
+
 
 def fonts(point):
     font_size = 40
@@ -147,21 +185,33 @@ if __name__ == '__main__':
     font = pygame.font.Font(None, 30)
     text_lines = ["Счёт", "", ]
     flag = 0
-    x_mouse, y_mouse = 3, 0
+    x_mouse, y_mouse = 0, 0
     bomb_gr = pygame.sprite.Group()
     fireflag = 0
+    new_bomb = None
+    big_flag = 0
+    keyy = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_z:
-                flag = 1
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x:
-                if board.fire > 0:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_z and not fireflag and not big_flag and not flag:
+                if board.small_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
+                    board.small_bomb -= 1
+                    flag = 1
+                    new_bomb = Bomb(x_mouse, y_mouse, "small")
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c and not fireflag and not flag and not big_flag:
+                if board.big_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
+                    board.big_bomb -= 1
+                    big_flag = 1
+                    new_bomb = Bomb(5, 0, "big")
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x and not flag and not big_flag and not fireflag:
+                if board.fire > 0 and fireflag == 0:
                     board.fire -= 1
                     fireflag = 1
             elif event.type == pygame.KEYDOWN:
-                if board.figuri != []:
+                keyy = event
+                if board.figuri != [] and flag < 2 and big_flag < 2:
                     fig = board.figuri[-1]
                     fig.move(event)
             if event.type == pygame.MOUSEMOTION:
@@ -169,7 +219,8 @@ if __name__ == '__main__':
                 if pos is not None:
                     y_mouse, x_mouse = pos
             if event.type == pygame.MOUSEBUTTONDOWN:
-                flag = 3
+                if flag:
+                    flag = 3
 
         screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
@@ -182,32 +233,35 @@ if __name__ == '__main__':
         text_coord = 50
         # Выводим очки
         fonts(board.points)
+        bafs(board.fire, board.small_bomb, board.big_bomb)
         if board.figuri:
             fig = board.figuri[-1]
-            if fig.update() is not None and not flag:
-                if fireflag == 0:
+            if flag < 2 and big_flag < 2 and fig.update() is not None:
+                if fireflag == 0 and flag == 0 and big_flag == 0:
                     board.next_move()
                     speed = 1
                 elif fireflag == 1:
                     board.fires()
                     fireflag = 2
-            elif flag == 1:
-                new_bomb = Block(x_mouse, y_mouse, "small_bomb")
-                flag = 2
-            elif flag == 2:
-                if new_bomb.pos_x != x_mouse:
-                    new_bomb.pos_x = x_mouse
-                if new_bomb.pos_y != y_mouse:
-                    new_bomb.pos_y = y_mouse
+                elif flag == 1:
+                    flag = 2
+                elif big_flag == 1:
+                    big_flag = 2
+            if flag > 1:
+                flag, new_bomb, n = board.boom(new_bomb, flag, x_mouse, y_mouse, n, main_speed, keyy)
+            elif big_flag > 1:
+                big_flag, new_bomb, n = board.boom(new_bomb, big_flag, 7, 0, n, main_speed, keyy)
         n += speed
         all_sprites.draw(screen)
 
-        if main_speed - n <= 0:
+
+
+        if big_flag < 2 and flag < 2 and main_speed - n <= 0:
             n = 0
             k += 1
             if fireflag == 2:
                 fireflag = board.move_fire()
-                all_sprites.update()
+                fire.update()
             else:
                 fig.down()
 
@@ -215,6 +269,7 @@ if __name__ == '__main__':
         # if k % 8 == 0:
         #     k = 1
         #     board.next_move()
+        keyy = None
 
         clock.tick(FPS)
         pygame.display.flip()
