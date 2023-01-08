@@ -66,17 +66,41 @@ def bafs(x, z, c):
     screen.blit(fire_bomb_2, (25, 305))
 
 
-def fonts(point):
+def fonts(point, rec):
     font_size = 40
     font = pygame.font.Font(None, font_size)
     font_color = (255, 255, 255)
     text = font.render("Счёт", 1, font_color)
-
     screen.blit(text, (500, 300))
-
     text1 = font.render(str(point), 1, font_color)
     screen.blit(text1, (510, 350))
 
+    record = font.render("Рекорд", 1, font_color)
+    screen.blit(record, (490, 420))
+    record1 = font.render(str(rec), 1, font_color)
+    screen.blit(record1, (510, 470))
+
+
+def start():
+    font_size = 60
+    font = pygame.font.Font(None, font_size)
+    font_color = (255, 255, 255)
+    text = font.render("Для начала игры", 1, font_color)
+    screen.blit(text, (125, 200))
+
+    record = font.render("Нажмите  Enter", 1, font_color)
+    screen.blit(record, (150, 250))
+
+
+def end():
+    font_size = 60
+    font = pygame.font.Font(None, font_size)
+    font_color = (255, 255, 255)
+    text = font.render("Начать заново игру", 1, font_color)
+    screen.blit(text, (125, 200))
+
+    record = font.render("Нажмите  Enter", 1, font_color)
+    screen.blit(record, (150, 250))
 
 def start_screen(image_fon, text):
     global FPS
@@ -191,10 +215,17 @@ if __name__ == '__main__':
     new_bomb = None
     big_flag = 0
     keyy = None
+    play_flag = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN and event.key == 13:
+                print(play_flag)
+                if play_flag == 2:
+                    screen.fill((0, 0, 0))
+                    board = Board(23, 10)
+                play_flag = 1
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_z and not fireflag and not big_flag and not flag:
                 if board.small_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
                     board.small_bomb -= 1
@@ -210,10 +241,11 @@ if __name__ == '__main__':
                     board.fire -= 1
                     fireflag = 1
             elif event.type == pygame.KEYDOWN:
-                keyy = event
-                if board.figuri != [] and flag < 2 and big_flag < 2:
-                    fig = board.figuri[-1]
-                    fig.move(event)
+                if play_flag != 0:
+                    keyy = event
+                    if board.figuri != [] and flag < 2 and big_flag < 2:
+                        fig = board.figuri[-1]
+                        fig.move(event)
             if event.type == pygame.MOUSEMOTION:
                 pos = board.get_cell(event.pos)
                 if pos is not None:
@@ -232,11 +264,12 @@ if __name__ == '__main__':
             speed = 1
         text_coord = 50
         # Выводим очки
-        fonts(board.points)
+        play_flag = board.game_end(play_flag)
+        fonts(board.points, board.record)
         bafs(board.fire, board.small_bomb, board.big_bomb)
         if board.figuri:
             fig = board.figuri[-1]
-            if flag < 2 and big_flag < 2 and fig.update() is not None:
+            if flag < 2 and big_flag < 2 and fig.update() is not None and play_flag != 2:
                 if fireflag == 0 and flag == 0 and big_flag == 0:
                     board.next_move()
                     speed = 1
@@ -253,9 +286,6 @@ if __name__ == '__main__':
                 big_flag, new_bomb, n = board.boom(new_bomb, big_flag, 7, 0, n, main_speed, keyy)
         n += speed
         all_sprites.draw(screen)
-
-
-
         if big_flag < 2 and flag < 2 and main_speed - n <= 0:
             n = 0
             k += 1
@@ -263,13 +293,20 @@ if __name__ == '__main__':
                 fireflag = board.move_fire()
                 fire.update()
             else:
-                fig.down()
+                if play_flag != 0:
+                    fig.down()
 
         board.render(screen)
         # if k % 8 == 0:
         #     k = 1
         #     board.next_move()
         keyy = None
+
+        if play_flag == 0:
+            start()
+        if play_flag == 2:
+            end()
+
 
         clock.tick(FPS)
         pygame.display.flip()

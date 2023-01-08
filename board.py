@@ -5,13 +5,12 @@ import pygame
 
 from random import choice, randint
 from settings import *
-
+from sql import result
 
 def delete_no(r, x1, y1, x2, y2):
     if (r >= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
         return True
     return False
-
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -31,9 +30,10 @@ class Board:
         self.left = 100
         self.top = 0
         # переменная для бафов
-        self.fire = 1
-        self.small_bomb = 5
-        self.big_bomb = 10
+        self.fire = 0
+        self.small_bomb = 0
+        self.big_bomb = 0
+        self.record = 0
 
         self.cell_size = 35
         self.t = Table(1, self.left, self.top)
@@ -150,6 +150,16 @@ class Board:
         self.block()
         return 2
 
+    def game_end(self, n):
+        k = 0
+        for i in range(10):
+            if self.board[i][0] != 0:
+                k += 1
+        if k != 0:
+            return 2
+        return n
+
+
     def boom(self, bomb, flag, x_m, y_m, n, main_speed, event):
         global figure_group
         if flag == 1:
@@ -231,6 +241,7 @@ class Board:
     def next_move(self):
         self.tables()
         self.figuri = []
+        self.record = result(self.points)
         self.figuri.append(Figures(7, 0, self.next_figura))
         self.next_figura = choice(figure)
         self.next_picture()
