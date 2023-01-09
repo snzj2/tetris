@@ -221,10 +221,16 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == 13:
-                print(play_flag)
                 if play_flag == 2:
                     screen.fill((0, 0, 0))
                     board = Board(23, 10)
+                    all_sprites = pygame.sprite.Group()
+                    figure_group = pygame.sprite.Group()
+                    fire = pygame.sprite.Group()
+                    board.next_move()
+                    speed = 1
+                    play_flag = 1
+                    continue
                 play_flag = 1
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_z and not fireflag and not big_flag and not flag:
                 if board.small_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
