@@ -253,9 +253,8 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if flag:
                     flag = 3
-
-        screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
+        screen.blit(fon, (0, 0))
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
             speed = main_speed // 4

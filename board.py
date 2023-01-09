@@ -47,11 +47,7 @@ class Board:
         self.figuri = []
 
     def render(self, screen):
-        for i, h in enumerate(self.board):
-            for k, w in enumerate(h):
-                pygame.draw.rect(screen, (255, 255, 255),
-                                 (self.left + i * self.cell_size, self.top + k * self.cell_size,
-                                  self.cell_size, self.cell_size), 1)
+        pass
 
     def next_picture(self):
         self.image = load_image(f"{self.next_figura}.png")
@@ -417,6 +413,8 @@ class Border(pygame.sprite.Sprite):
         if x1 == x2:  # вертикальная стенка
             self.add(vertical_borders)
             self.image = pygame.Surface([1, y2 - y1])
+            self.image.fill((255, 255, 255))
+            self.image.set_alpha(1)
             self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
         else:  # горизонтальная стенка
             self.add(horizontal_borders)
