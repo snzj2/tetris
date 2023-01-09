@@ -180,14 +180,6 @@ def start_screen(image_fon, text):
         pygame.display.flip()
 
 
-Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
-Border(5, 5, 5, HEIGHT - 5)
-Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
-
-Border(5, HEIGHT - 5, WIDTH - 5, HEIGHT - 5)
-Border(5, 5, 5, HEIGHT - 5)
-Border(WIDTH - 5, 5, WIDTH - 5, HEIGHT - 5)
-
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Тетрис')
@@ -216,15 +208,23 @@ if __name__ == '__main__':
     big_flag = 0
     keyy = None
     play_flag = 0
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == 13:
-                print(play_flag)
                 if play_flag == 2:
-                    screen.fill((0, 0, 0))
+                    for i in all_sprites:
+                        i.kill()
                     board = Board(23, 10)
+                    board.next_move()
+                    speed = 1
+                    play_flag = 1
+                    down_border = Border(100, HEIGHT, WIDTH - 100, HEIGHT)
+                    left_border = Border(100, 0, 100, HEIGHT)
+                    right_border = Border(WIDTH - 235, 0, WIDTH - 235, HEIGHT)
+
                 play_flag = 1
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_z and not fireflag and not big_flag and not flag:
                 if board.small_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
@@ -257,7 +257,6 @@ if __name__ == '__main__':
         screen.blit(fon, (0, 0))
         screen.blit(board.scale, board.rect)
         keys = pygame.key.get_pressed()
-
         if keys[pygame.K_DOWN]:
             speed = main_speed // 4
         else:
@@ -267,6 +266,7 @@ if __name__ == '__main__':
         play_flag = board.game_end(play_flag)
         fonts(board.points, board.record)
         bafs(board.fire, board.small_bomb, board.big_bomb)
+        print(all_sprites)
         if board.figuri:
             fig = board.figuri[-1]
             if flag < 2 and big_flag < 2 and fig.update() is not None and play_flag != 2:
@@ -306,7 +306,6 @@ if __name__ == '__main__':
             start()
         if play_flag == 2:
             end()
-
 
         clock.tick(FPS)
         pygame.display.flip()

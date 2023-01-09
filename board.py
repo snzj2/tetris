@@ -3,14 +3,18 @@ import sys
 
 import pygame
 
+from pprint import pprint
+
 from random import choice, randint
 from settings import *
 from sql import result
+
 
 def delete_no(r, x1, y1, x2, y2):
     if (r >= ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5):
         return True
     return False
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -157,8 +161,9 @@ class Board:
                 k += 1
         if k != 0:
             return 2
+        if k == 0:
+            return 1
         return n
-
 
     def boom(self, bomb, flag, x_m, y_m, n, main_speed, event):
         global figure_group
@@ -229,7 +234,9 @@ class Board:
     def tables(self):
         global figure_group
         # заполняем двухмерный массив где находятся блоки
+
         self.board = self.t.markup(self.board_2)
+
         self.examination()
         # удаляем группу
         for i in figure_group:
@@ -240,6 +247,7 @@ class Board:
 
     def next_move(self):
         self.tables()
+
         self.figuri = []
         self.record = result(self.points)
         self.figuri.append(Figures(7, 0, self.next_figura))
@@ -439,7 +447,6 @@ class Table(pygame.sprite.Sprite):
                             board[i][k] = 2
                         if n.color[:1] == "b":
                             board[i][k] = 3
-
         return board
 
 
