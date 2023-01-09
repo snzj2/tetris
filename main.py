@@ -109,7 +109,7 @@ def start_screen(image_fon, text):
                   "",
                   ""]
     fon = pygame.transform.scale(load_image(image_fon), (WIDTH, HEIGHT))
-    main_speed = 60
+    main_speed = 50
 
     while True:
         for event in pygame.event.get():
@@ -118,11 +118,11 @@ def start_screen(image_fon, text):
             elif event.type == pygame.KEYDOWN and (event.key == 13 or event.key == pygame.K_KP_ENTER):
                 return main_speed
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    if main_speed != 1 and text == "settings_text":
-                        main_speed -= 5
                 if event.key == pygame.K_UP:
-                    if text == "settings_text":
+                    if main_speed != 0 and text == "settings_text":
+                        main_speed -= 5
+                if event.key == pygame.K_DOWN:
+                    if text == "settings_text" and main_speed != 50:
                         main_speed += 5
 
         screen.blit(fon, (0, 0))
@@ -167,7 +167,7 @@ def start_screen(image_fon, text):
                           "",
                           "Enter чтобы продолжить",
                           "",
-                          f"скорость сейчас: {main_speed}"]
+                          f"скорость сейчас: {(50 - main_speed) * 2}"]
 
         for line in text_lines:
             string_rendered = font.render(line, 1, pygame.Color('white'))
@@ -253,8 +253,8 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if flag:
                     flag = 3
-        screen.blit(board.scale, board.rect)
         screen.blit(fon, (0, 0))
+        screen.blit(board.scale, board.rect)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
             speed = main_speed // 4
@@ -265,7 +265,6 @@ if __name__ == '__main__':
         play_flag = board.game_end(play_flag)
         fonts(board.points, board.record)
         bafs(board.fire, board.small_bomb, board.big_bomb)
-        print(all_sprites)
         if board.figuri:
             fig = board.figuri[-1]
             if flag < 2 and big_flag < 2 and fig.update() is not None and play_flag != 2:

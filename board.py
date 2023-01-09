@@ -212,16 +212,18 @@ class Board:
                 delete.append(i)
         if len(delete) == 1:
             self.points += 100
-
+            self.small_bomb += 1
         if len(delete) == 2:
             self.points += 300
-            self.small_bomb += 1
+            self.fire += 1
         if len(delete) == 3:
             self.points += 700
-            self.fire += 1
+            self.big_bomb += 1
         if len(delete) == 4:
             self.points += 1500
             self.big_bomb += 1
+            self.fire += 1
+            self.small_bomb += 1
         for i in delete:
             for k in range(10):
                 del self.board[k][i]
