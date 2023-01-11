@@ -34,9 +34,9 @@ class Board:
         self.left = 100
         self.top = 0
         # переменная для бафов
-        self.fire = 0
-        self.small_bomb = 0
-        self.big_bomb = 0
+        self.fire = 1
+        self.small_bomb = 1
+        self.big_bomb = 1
         self.record = 0
 
         self.cell_size = 35
@@ -212,16 +212,18 @@ class Board:
                 delete.append(i)
         if len(delete) == 1:
             self.points += 100
-
+            self.small_bomb += 1
         if len(delete) == 2:
             self.points += 300
-            self.small_bomb += 1
+            self.fire += 1
         if len(delete) == 3:
             self.points += 700
-            self.fire += 1
+            self.big_bomb += 1
         if len(delete) == 4:
             self.points += 1500
             self.big_bomb += 1
+            self.fire += 1
+            self.small_bomb += 1
         for i in delete:
             for k in range(10):
                 del self.board[k][i]
@@ -243,7 +245,6 @@ class Board:
 
     def next_move(self):
         self.tables()
-
         self.figuri = []
         self.record = result(self.points)
         self.figuri.append(Figures(7, 0, self.next_figura))

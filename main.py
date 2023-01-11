@@ -95,7 +95,7 @@ def start():
 def end():
     font_size = 60
     font = pygame.font.Font(None, font_size)
-    font_color = (255, 255, 255)
+    font_color = "#ffff00"
     text = font.render("Начать заново игру", 1, font_color)
     screen.blit(text, (125, 200))
 
@@ -109,7 +109,7 @@ def start_screen(image_fon, text):
                   "",
                   ""]
     fon = pygame.transform.scale(load_image(image_fon), (WIDTH, HEIGHT))
-    main_speed = 60
+    main_speed = 50
 
     while True:
         for event in pygame.event.get():
@@ -118,11 +118,11 @@ def start_screen(image_fon, text):
             elif event.type == pygame.KEYDOWN and (event.key == 13 or event.key == pygame.K_KP_ENTER):
                 return main_speed
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    if main_speed != 1 and text == "settings_text":
-                        main_speed -= 5
                 if event.key == pygame.K_UP:
-                    if text == "settings_text":
+                    if main_speed != 0 and text == "settings_text":
+                        main_speed -= 5
+                if event.key == pygame.K_DOWN:
+                    if text == "settings_text" and main_speed != 50:
                         main_speed += 5
 
         screen.blit(fon, (0, 0))
@@ -131,13 +131,14 @@ def start_screen(image_fon, text):
         if text == "controlers_text":
             text_coord = 20
             text_lines = ["Кнопки в игре:", "",
-                          "/\ Использовать бонус",
-                          "|| (Нарисован в верхнем ",
-                          "|| левом углу)",
+                          "Z - использовать маленькую бомбу",
+                          "X - использовать огонь",
+                          "C - использовать большую бомбу",
                           "",
+                          "Подробнее о бонусах в пояснительной записке",
                           "",
                           "|| Увеличить скорость ",
-                          "|| фигрурки до предела",
+                          "|| фигрурки в 4 раза",
                           "\/",
                           "",
                           "-> подвинуть фигурку",
@@ -147,7 +148,7 @@ def start_screen(image_fon, text):
                           "   на 1 клеточку влево",
                           "",
                           "K - повернуть фигурку",
-                          "   по чесовой",
+                          "   по часовой",
                           "",
                           "L - повернуть фигурку",
                           "  против часовой",
@@ -167,7 +168,7 @@ def start_screen(image_fon, text):
                           "",
                           "Enter чтобы продолжить",
                           "",
-                          f"скорость сейчас: {main_speed}"]
+                          f"скорость сейчас: {(50 - main_speed) * 2}"]
 
         for line in text_lines:
             string_rendered = font.render(line, 1, pygame.Color('white'))
@@ -230,7 +231,7 @@ if __name__ == '__main__':
                 if board.small_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
                     board.small_bomb -= 1
                     flag = 1
-                    new_bomb = Bomb(x_mouse, y_mouse, "small")
+                    new_bomb = Bomb(5, 0, "small")
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_c and not fireflag and not flag and not big_flag:
                 if board.big_bomb > 0 and flag == 0 and fireflag == 0 and big_flag == 0:
                     board.big_bomb -= 1
@@ -240,6 +241,8 @@ if __name__ == '__main__':
                 if board.fire > 0 and fireflag == 0:
                     board.fire -= 1
                     fireflag = 1
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                start_screen("fon_2.jpg", "controlers_text")
             elif event.type == pygame.KEYDOWN:
                 if play_flag != 0:
                     keyy = event
@@ -253,8 +256,8 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if flag:
                     flag = 3
-        screen.blit(board.scale, board.rect)
         screen.blit(fon, (0, 0))
+        screen.blit(board.scale, board.rect)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
             speed = main_speed // 4
@@ -265,7 +268,6 @@ if __name__ == '__main__':
         play_flag = board.game_end(play_flag)
         fonts(board.points, board.record)
         bafs(board.fire, board.small_bomb, board.big_bomb)
-        print(all_sprites)
         if board.figuri:
             fig = board.figuri[-1]
             if flag < 2 and big_flag < 2 and fig.update() is not None and play_flag != 2:
@@ -309,3 +311,4 @@ if __name__ == '__main__':
         clock.tick(FPS)
         pygame.display.flip()
 pygame.quit()
+
