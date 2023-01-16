@@ -34,9 +34,9 @@ class Board:
         self.left = 100
         self.top = 0
         # переменная для бафов
-        self.fire = 1
-        self.small_bomb = 1
-        self.big_bomb = 1
+        self.fire = 0
+        self.small_bomb = 0
+        self.big_bomb = 0
         self.record = 0
 
         self.cell_size = 35
